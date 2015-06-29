@@ -1,0 +1,19 @@
+<html>
+  <head>
+    <title>Small Page</title>
+    <script src="../js/data-layer-helper.js"></script>
+    <script>
+      dataLayer = [];
+      var ddlHelper = new DataLayerHelper(dataLayer);
+    </script>
+    <!-- Include Scala.js compiled code -->
+    <script type="text/javascript" src="../../../../target/scala-2.11/scala-js-tutorial-fastopt.js"></script>
+    <!-- Run tutorial.webapp.TutorialApp -->
+    <script type="text/javascript">
+      tutorial.webapp.TutorialApp().main();
+    </script>
+  </head>
+  <body>
+    <h1>Small Page</h1>
+  </body>
+</html>
