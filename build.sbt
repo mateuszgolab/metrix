@@ -13,6 +13,8 @@ skip in packageJSDependencies := false
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0-M3" % "test"
 libraryDependencies += "org.seleniumhq.selenium" % "selenium-java" % "2.35.0" % "test"
 
+jsDependencies += ProvidedJS / "data-layer-helper.js"
+scalaJSStage in Global := FastOptStage
 
 // uTest settings
 libraryDependencies += "com.lihaoyi" %%% "utest" % "0.3.1" % "test"
