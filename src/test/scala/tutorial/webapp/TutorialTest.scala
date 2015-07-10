@@ -30,13 +30,6 @@ object TutorialTest extends TestSuite {
         button.click()
         assert(messageCount == i)
       }
-
-    }
-
-    'Scrolling {
-      val ddlHelper = TutorialApp.DataLayerHelper.instance
-      assert(ddlHelper.get("metrics.page.small.maxScrolled") == "0%")
-      assert(ddlHelper.get("metrics.page.small.maxViewed") == "100%")
     }
   }
 }
