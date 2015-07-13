@@ -12,9 +12,6 @@ object Metrix extends js.JSApp {
     initiateScrollTracking()
   }
 
-  val doc = dom.document
-  val window = doc.defaultView
-
   def initiateScrollTracking(): Unit = {
     // initiate metrics in the ddl
     val Scroll(currentScrollingPercent, currentViewedPercent) = captureScroll()
@@ -26,30 +23,32 @@ object Metrix extends js.JSApp {
     val recordMaxScroll = (_: Any) => {
       val Scroll(currentScrollingPercent, currentViewedPercent) = captureScroll()
       Try(DataLayer.get[Double]("metrics.maxViewed")) filter {
-        max => currentViewedPercent <= max
+        max => currentViewedPercent >= max
       } foreach { _ =>
         DataLayer.push(obj(metrics =
                              obj(maxScrolled = currentScrollingPercent,
                                  maxViewed = currentViewedPercent)))
       }
     }
-    window.addEventListener("scroll", recordMaxScroll)
+    val window = dom.document.defaultView
+    window.addEventListener("scroll", recordMaxScroll) // can't we discard scroll up?
     window.addEventListener("resize", recordMaxScroll)
   }
 
   def captureScroll(): Scroll = {
-    val currentScrolling = window.pageYOffset
-    val pageScrollHeight = doc.body.scrollHeight
+    val currentScrolling = dom.document.defaultView.pageYOffset
+    val pageScrollHeight = dom.document.body.scrollHeight
     val currentScrollingPercent = (currentScrolling / pageScrollHeight) * 100
 
-    val currentDepthViewed = currentScrolling + doc.documentElement.clientHeight
+    val currentDepthViewed = currentScrolling + dom.document.documentElement.clientHeight
     val currentViewedPercent = (currentDepthViewed / pageScrollHeight) * 100
-    new Scroll(currentScrollingPercent, currentViewedPercent)
+    Scroll(currentScrollingPercent, currentViewedPercent)
   }
 
-  trait Metrics
+  sealed trait Metrics
   case class Scroll(depth: Double, viewed: Double) extends Metrics
 }
+
 
 
 @JSName("DataLayerHelper")
