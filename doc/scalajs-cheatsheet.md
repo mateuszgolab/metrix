@@ -37,3 +37,7 @@ Access Window in scalajs.dom
 ============================
 
 `val window = dom.document.defaultView`
+
+Including ScalaJS code in the page
+==================================
+not in <head> otherwise no sizes.

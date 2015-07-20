@@ -5,12 +5,12 @@ name := "metrix"
 scalaVersion := "2.11.6"
 
 libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.1"
+libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.3.4"
 
-libraryDependencies += "be.doeraene" %%% "scalajs-jquery" % "0.8.0"
-jsDependencies += RuntimeDOM
 // concat all jsdeps into a -jsdeps.js
 skip in packageJSDependencies := false
 
+jsDependencies += RuntimeDOM
 jsDependencies += ProvidedJS / "data-layer-helper.js"
 
 // to run on NodeJS

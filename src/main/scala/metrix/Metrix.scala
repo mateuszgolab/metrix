@@ -7,27 +7,34 @@ import js.Dynamic.{literal => obj}
 import org.scalajs.dom
 
 object Metrix extends js.JSApp {
+  def main(): Unit = Scroll.init()
+}
 
-  def main(): Unit = {
-    initiateScrollTracking()
-  }
+sealed trait Metrics
+case class Scroll(scrolled: Double, viewed: Double) extends Metrics
+// trait Aggregation extends Metrics {
+//   def apply(): Unit
+// }
+// case class Max(m: Metrics) extends Aggregation {
+//   def apply() = asMap(js.JSON.parse(write(m)))
+// }
+// Max(Scroll())
 
-  def initiateScrollTracking(): Unit = {
+object Scroll {
+  def init(): Unit = {
     // initiate metrics in the ddl
-    val Scroll(currentScrollingPercent, currentViewedPercent) = captureScroll()
-    DataLayer.push(obj(metrics =
-                         obj(maxScrolled = currentScrollingPercent,
-                             maxViewed = currentViewedPercent)))
+    // if we don't do it after the document is rendered, height is 0
+    dom.document.onload = Helpers.asListener {
+      DataLayer.pushMetrics(apply())
+    }
 
     // register listener
     val recordMaxScroll = (_: Any) => {
-      val Scroll(currentScrollingPercent, currentViewedPercent) = captureScroll()
+      val scroll = apply()
       Try(DataLayer.get[Double]("metrics.maxViewed")) filter {
-        max => currentViewedPercent >= max
+        max => scroll.viewed >= max
       } foreach { _ =>
-        DataLayer.push(obj(metrics =
-                             obj(maxScrolled = currentScrollingPercent,
-                                 maxViewed = currentViewedPercent)))
+        DataLayer.pushMetrics(scroll)
       }
     }
     val window = dom.document.defaultView
@@ -35,21 +42,23 @@ object Metrix extends js.JSApp {
     window.addEventListener("resize", recordMaxScroll)
   }
 
-  def captureScroll(): Scroll = {
-    val currentScrolling = dom.document.defaultView.pageYOffset
-    val pageScrollHeight = dom.document.body.scrollHeight
+  def apply(): Scroll = {
+    val doc = dom.document
+    val currentScrolling = doc.defaultView.pageYOffset
+    val pageScrollHeight = doc.body.scrollHeight
     val currentScrollingPercent = (currentScrolling / pageScrollHeight) * 100
 
-    val currentDepthViewed = currentScrolling + dom.document.documentElement.clientHeight
+    val currentDepthViewed = currentScrolling + doc.documentElement.clientHeight
     val currentViewedPercent = (currentDepthViewed / pageScrollHeight) * 100
     Scroll(currentScrollingPercent, currentViewedPercent)
   }
-
-  sealed trait Metrics
-  case class Scroll(depth: Double, viewed: Double) extends Metrics
 }
 
+object Helpers {
+  def asListener(f: => Unit) = (_: Any) => f
+}
 
+import upickle.default._
 
 @JSName("DataLayerHelper")
 class DataLayerHelper(ddl: js.Array[js.Any]) extends js.Object {
@@ -58,7 +67,6 @@ class DataLayerHelper(ddl: js.Array[js.Any]) extends js.Object {
 
 object DOMGlobalScope extends js.GlobalScope {
   def dataLayer: js.Array[js.Any] = js.native
-  // def window
 }
 
 object DataLayer {
@@ -73,4 +81,5 @@ object DataLayer {
   def push(json: js.Dynamic) = instance.push(json)
   def get(key: String): String = helper.get(key).asInstanceOf[String]
   def get[U](key: String): U = helper.get(key).asInstanceOf[U]
+  def pushMetrics(m: Metrics) = push(obj(metrics = js.JSON.parse(write(m))))
 }
