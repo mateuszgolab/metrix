@@ -21,41 +21,48 @@ case class Scroll(scrolled: Double, viewed: Double) extends Metrics
 // Max(Scroll())
 
 object Scroll {
+  import Helpers._
   def init(): Unit = {
     // initiate metrics in the ddl
     // if we don't do it after the document is rendered, height is 0
-    dom.document.onload = Helpers.asListener {
+    val window = dom.document.defaultView
+    val onLoadListener = asListener {
       DataLayer.pushMetrics(apply())
     }
-
+    // TODO: make it work with addEventListener("onload", listener)
+    // window.addEventListener("onload", onLoadListener)
+    window.onload = onLoadListener
     // register listener
-    val recordMaxScroll = (_: Any) => {
+    val recordMaxScroll = asListener {
       val scroll = apply()
-      Try(DataLayer.get[Double]("metrics.maxViewed")) filter {
+      // TODO: the key should not be hardcoded
+      Try(DataLayer.get[Double]("metrics.viewed")) filter {
         max => scroll.viewed >= max
       } foreach { _ =>
         DataLayer.pushMetrics(scroll)
       }
     }
-    val window = dom.document.defaultView
     window.addEventListener("scroll", recordMaxScroll) // can't we discard scroll up?
     window.addEventListener("resize", recordMaxScroll)
   }
 
   def apply(): Scroll = {
     val doc = dom.document
-    val currentScrolling = doc.defaultView.pageYOffset
-    val pageScrollHeight = doc.body.scrollHeight
-    val currentScrollingPercent = (currentScrolling / pageScrollHeight) * 100
+    val currentScrolling = doc.documentElement.scrollTop
+    val pageHeight = doc.body.scrollHeight
 
-    val currentDepthViewed = currentScrolling + doc.documentElement.clientHeight
-    val currentViewedPercent = (currentDepthViewed / pageScrollHeight) * 100
-    Scroll(currentScrollingPercent, currentViewedPercent)
+    val window = doc.defaultView
+    val currentDepthViewed = currentScrolling + window.innerHeight
+    Scroll(percent(currentScrolling, pageHeight),
+           percent(currentDepthViewed, pageHeight))
   }
 }
 
 object Helpers {
-  def asListener(f: => Unit) = (_: Any) => f
+  def asListener(f: => Unit) = (_: dom.Event) => f
+  def asVerboseListener(trace: String)(f: => Unit) =
+    (_: dom.Event) => { println(trace); f }
+  def percent(n: Double, d: Double): Double = n / d * 100d
 }
 
 import upickle.default._
