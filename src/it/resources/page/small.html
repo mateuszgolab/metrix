@@ -1,0 +1,19 @@
+<html>
+  <head>
+    <title>Small Page</title>
+    <!-- Include Scala.js compiled code -->
+    <script type="text/javascript" src="/target/metrix-jsdeps.js"></script>
+    <script type="text/javascript" src="/target/metrix-fastopt.js"></script>
+    <script>
+      dataLayer = [];
+      var ddlHelper = new DataLayerHelper(dataLayer);
+    </script>
+  </head>
+  <body>
+    <h1>Small Page</h1>
+    <!-- Run tutorial.webapp.TutorialApp -->
+    <script type="text/javascript">
+      metrix.Metrix().main();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>The Scala.js Tutorial</title>
+    </head>
+
+    <body>
+
+        <!-- Include Scala.js compiled code -->
+        <script type="text/javascript" src="./target/scala-2.11/metrix-jsdeps.js"></script>
+        <script type="text/javascript" src="./target/scala-2.11/metrix-fastopt.js"></script>
+        <!-- Run tutorial.webapp.TutorialApp -->
+        <script type="text/javascript">
+        metrix.Metrix().main();
+        var i=0;
+        </script>
+
+        <button id="click-me-button" type="button" onclick="i++; DataLayer.instance.push({\"test\": i})">Click me!</button>
+
+    </body>
+</html>
